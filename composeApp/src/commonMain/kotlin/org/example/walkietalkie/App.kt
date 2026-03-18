@@ -1,81 +1,93 @@
 package org.example.walkietalkie
 
 import androidx.compose.runtime.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.example.walkietalkie.model.Signal
 import org.example.walkietalkie.model.SignalType
 import org.example.walkietalkie.signaling.SignalingService
+import org.example.walkietalkie.ui.JoinRoomScreen
 import org.example.walkietalkie.ui.WalkieTalkieScreen
 
 @Composable
 fun App(
+
+    savedRoom: String,
+    onSaveRoom: (String) -> Unit,
+
     onSignalReceived: (Signal) -> Unit,
     onTalk: (String) -> Unit,
     onStop: () -> Unit,
     onExit: () -> Unit
+
 ) {
 
     val signalingService = SignalingService()
 
-    // CURRENT ROOM STATE (dynamic now)
-    var currentRoom by remember { mutableStateOf("room_1015") }
+    var currentRoom by remember {
+        mutableStateOf(savedRoom)
+    }
 
-    WalkieTalkieScreen(
+    var isInRoom by remember {
+        mutableStateOf(savedRoom.isNotEmpty())
+    }
 
-        onPing = { room ->
+    if (!isInRoom) {
 
-            currentRoom = room
+        JoinRoomScreen(
 
-            CoroutineScope(Dispatchers.Default).launch {
-                signalingService.sendPing(room)
+            onJoinRoom = { room ->
+
+                currentRoom = room
+                isInRoom = true
+
+                onSaveRoom(room)
+
             }
+        )
 
-        },
+    } else {
 
-        onTalk = { room ->
+        WalkieTalkieScreen(
 
-            currentRoom = room
+            room = currentRoom,
 
-            onTalk(room)
+            onPing = { room ->
+                CoroutineScope(Dispatchers.Default).launch {
+                    signalingService.sendPing(room)
+                }
+            },
 
-        },
+            onTalk = onTalk,
+            onStop = onStop,
 
-        onStop = {
-            onStop()
-        },
+            onExit = {
 
-        onExit = {
-            onExit()
-        }
+                onExit()
+                isInRoom = false
 
-    )
+            }
+        )
+    }
 
     LaunchedEffect(Unit) {
 
         signalingService.listenForSignals { signal ->
 
-            // ONLY ACCEPT SIGNALS FOR CURRENT ROOM
-            if(signal.room != currentRoom){
-                return@listenForSignals
-            }
+            if (signal.room != currentRoom) return@listenForSignals
 
-            when(signal.type){
+            when (signal.type) {
 
                 SignalType.PING -> {
                     println("User wants to talk")
                 }
 
                 SignalType.OFFER -> {
-                    println("Offer received")
                     onSignalReceived(signal)
                 }
 
                 SignalType.ANSWER -> {
-                    println("Answer received")
                     onSignalReceived(signal)
                 }
 
@@ -84,5 +96,4 @@ fun App(
         }
 
     }
-
 }

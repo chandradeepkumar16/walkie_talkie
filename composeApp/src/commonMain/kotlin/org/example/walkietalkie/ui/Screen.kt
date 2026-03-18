@@ -1,27 +1,23 @@
 package org.example.walkietalkie.ui
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.material3.Text
-import androidx.compose.material3.Button
-import androidx.compose.material3.TextField
-import androidx.compose.runtime.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 
 @Composable
 fun WalkieTalkieScreen(
+
+    room: String,
+
     onPing: (String) -> Unit,
     onTalk: (String) -> Unit,
     onStop: () -> Unit,
     onExit: () -> Unit
+
 ) {
-
-    // frequency state
-    var frequency by remember { mutableStateOf("1015") }
-
-    // convert frequency to room
-    val currentRoom = "room_$frequency"
 
     Column(
         modifier = Modifier.fillMaxSize(),
@@ -29,25 +25,17 @@ fun WalkieTalkieScreen(
         verticalArrangement = Arrangement.Center
     ) {
 
-        Text("Enter Frequency")
+        Text("Connected to $room")
 
-        Spacer(modifier = Modifier.height(10.dp))
+        Spacer(modifier = Modifier.height(40.dp))
 
-        TextField(
-            value = frequency,
-            onValueChange = { frequency = it },
-            label = { Text("Frequency (example: 1015)") }
-        )
-
-        Spacer(modifier = Modifier.height(30.dp))
-
-        Button(onClick = { onPing(currentRoom) }) {
+        Button(onClick = { onPing(room) }) {
             Text("Ping")
         }
 
         Spacer(modifier = Modifier.height(20.dp))
 
-        Button(onClick = { onTalk(currentRoom) }) {
+        Button(onClick = { onTalk(room) }) {
             Text("Tap To Talk")
         }
 
@@ -60,7 +48,7 @@ fun WalkieTalkieScreen(
         Spacer(modifier = Modifier.height(20.dp))
 
         Button(onClick = onExit) {
-            Text("Exit")
+            Text("Exit Room")
         }
     }
 }

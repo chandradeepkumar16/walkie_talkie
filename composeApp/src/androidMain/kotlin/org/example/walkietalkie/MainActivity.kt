@@ -10,6 +10,8 @@ import org.example.walkietalkie.signaling.SignalingService
 import org.example.walkietalkie.webrtc.WebRTCManager
 import android.Manifest
 import androidx.core.app.ActivityCompat
+import android.content.Context
+
 
 
 class MainActivity : ComponentActivity() {
@@ -23,6 +25,7 @@ class MainActivity : ComponentActivity() {
             arrayOf(Manifest.permission.RECORD_AUDIO),
             1
         )
+        val prefs = getSharedPreferences("walkie_prefs", Context.MODE_PRIVATE)
         super.onCreate(savedInstanceState)
 
         webRTCManager = WebRTCManager(
@@ -33,69 +36,119 @@ class MainActivity : ComponentActivity() {
 
         }
 
+//        setContent {
+//
+//            App(
+//
+//                onSignalReceived = { signal ->
+//
+//                    when (signal.type) {
+//
+//                        SignalType.OFFER -> {
+//
+//                            webRTCManager.handleOffer(signal.data)
+//
+//                            webRTCManager.createAnswer { answer ->
+//
+//                                lifecycleScope.launch {
+//                                    signalingService.sendAnswer(signal.room, answer)
+//                                }
+//
+//                            }
+//                        }
+//
+//                        SignalType.ANSWER -> {
+//                            webRTCManager.handleAnswer(signal.data)
+//                        }
+//
+//                    }
+//
+//                },
+//
+//                onTalk = { room ->
+//
+//                    webRTCManager.startAudio()
+//
+//                    webRTCManager.createOffer { offer ->
+//
+//                        lifecycleScope.launch {
+//                            signalingService.sendOffer(room, offer)
+//                        }
+//
+//                    }
+//
+//                },
+//
+//                onStop = {
+//
+//                    webRTCManager.stopAudio()
+//
+//                    println("Transmission stopped")
+//
+//                },
+//
+//                onExit = {
+//
+//                    webRTCManager.closeConnection()
+//
+//                    println("User exited")
+//
+////                    finish()
+//
+//                }
+//
+//            )
+//
+//        }
+
+
         setContent {
 
+            val savedRoom = prefs.getString("room_id", "") ?: ""
+
             App(
+                savedRoom = savedRoom,
+
+                onSaveRoom = { room ->
+                    prefs.edit().putString("room_id", room).apply()
+                },
 
                 onSignalReceived = { signal ->
-
                     when (signal.type) {
-
                         SignalType.OFFER -> {
-
                             webRTCManager.handleOffer(signal.data)
 
                             webRTCManager.createAnswer { answer ->
-
                                 lifecycleScope.launch {
                                     signalingService.sendAnswer(signal.room, answer)
                                 }
-
                             }
                         }
 
                         SignalType.ANSWER -> {
                             webRTCManager.handleAnswer(signal.data)
                         }
-
                     }
-
                 },
 
                 onTalk = { room ->
-
                     webRTCManager.startAudio()
 
                     webRTCManager.createOffer { offer ->
-
                         lifecycleScope.launch {
                             signalingService.sendOffer(room, offer)
                         }
-
                     }
-
                 },
 
                 onStop = {
-
                     webRTCManager.stopAudio()
-
-                    println("Transmission stopped")
-
                 },
 
                 onExit = {
-
                     webRTCManager.closeConnection()
-
-                    println("User exited")
-
-//                    finish()
-
                 }
-
             )
-
         }
     }
 
