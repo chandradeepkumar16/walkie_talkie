@@ -5,6 +5,7 @@ import io.github.jan.supabase.realtime.PostgresAction
 import io.github.jan.supabase.realtime.channel
 import io.github.jan.supabase.realtime.decodeRecord
 import io.github.jan.supabase.realtime.postgresChangeFlow
+import kotlinx.coroutines.delay
 import org.example.walkietalkie.model.Signal
 import org.example.walkietalkie.model.SignalType
 import org.example.walkietalkie.network.SupabaseClient
@@ -30,35 +31,33 @@ class SignalingService {
     }
 
     suspend fun listenForSignals(onSignalReceived: (Signal) -> Unit) {
-
-        val channel = SupabaseClient.client.channel("signals-channel")
-
-        val changeFlow = channel.postgresChangeFlow<PostgresAction.Insert>(
-            schema = "public"
-        ) {
-            this.table = "signals"
-        }
-
-        channel.subscribe()
-
-        changeFlow.collect { change ->
+        while (true) {
             try {
+                val channel = SupabaseClient.client.channel("signals-channel")
 
-                val signal = change.decodeRecord<Signal>()
+                val changeFlow = channel.postgresChangeFlow<PostgresAction.Insert>(
+                    schema = "public"
+                ) {
+                    this.table = "signals"
+                }
 
-                println("Signal received: $signal")
+                channel.subscribe()
 
-                onSignalReceived(signal)
-
+                changeFlow.collect { change ->
+                    try {
+                        val signal = change.decodeRecord<Signal>()
+                        println("Signal received: $signal")
+                        onSignalReceived(signal)
+                    } catch (e: Exception) {
+                        println("Error decoding signal: ${e.message}")
+                    }
+                }
             } catch (e: Exception) {
-
-                println("Error decoding signal: ${e.message}")
-
+                if (e is kotlinx.coroutines.CancellationException) throw e
+                println("Error while listening for messages: ${e.message}. Retrying in 5s...")
+                delay(5000)
             }
         }
-
-
-
     }
 
 

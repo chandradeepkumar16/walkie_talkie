@@ -36,72 +36,6 @@ class MainActivity : ComponentActivity() {
 
         }
 
-//        setContent {
-//
-//            App(
-//
-//                onSignalReceived = { signal ->
-//
-//                    when (signal.type) {
-//
-//                        SignalType.OFFER -> {
-//
-//                            webRTCManager.handleOffer(signal.data)
-//
-//                            webRTCManager.createAnswer { answer ->
-//
-//                                lifecycleScope.launch {
-//                                    signalingService.sendAnswer(signal.room, answer)
-//                                }
-//
-//                            }
-//                        }
-//
-//                        SignalType.ANSWER -> {
-//                            webRTCManager.handleAnswer(signal.data)
-//                        }
-//
-//                    }
-//
-//                },
-//
-//                onTalk = { room ->
-//
-//                    webRTCManager.startAudio()
-//
-//                    webRTCManager.createOffer { offer ->
-//
-//                        lifecycleScope.launch {
-//                            signalingService.sendOffer(room, offer)
-//                        }
-//
-//                    }
-//
-//                },
-//
-//                onStop = {
-//
-//                    webRTCManager.stopAudio()
-//
-//                    println("Transmission stopped")
-//
-//                },
-//
-//                onExit = {
-//
-//                    webRTCManager.closeConnection()
-//
-//                    println("User exited")
-//
-////                    finish()
-//
-//                }
-//
-//            )
-//
-//        }
-
-
         setContent {
 
             val savedRoom = prefs.getString("room_id", "") ?: ""
@@ -112,6 +46,8 @@ class MainActivity : ComponentActivity() {
                 onSaveRoom = { room ->
                     prefs.edit().putString("room_id", room).apply()
                 },
+
+
 
                 onSignalReceived = { signal ->
                     when (signal.type) {
@@ -146,7 +82,13 @@ class MainActivity : ComponentActivity() {
                 },
 
                 onExit = {
+                    webRTCManager.stopAudio()
+
+                    // Close peer connection
                     webRTCManager.closeConnection()
+
+                    // Remove saved room
+                    prefs.edit().remove("room_id").apply()
                 }
             )
         }
