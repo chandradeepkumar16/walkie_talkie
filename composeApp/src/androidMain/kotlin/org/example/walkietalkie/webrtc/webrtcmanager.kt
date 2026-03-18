@@ -3,6 +3,8 @@ package org.example.walkietalkie.webrtc
 import android.content.Context
 import android.util.Log
 import org.webrtc.*
+import android.media.AudioManager
+
 
 class WebRTCManager(
     private val context: Context,
@@ -10,8 +12,12 @@ class WebRTCManager(
 ) {
 
     private lateinit var peerConnectionFactory: PeerConnectionFactory
+
     private var peerConnection: PeerConnection? = null
     private var audioTrack: AudioTrack? = null
+
+    private val audioManager =
+        context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
 
     init {
         initializeWebRTC()
@@ -252,6 +258,20 @@ class WebRTCManager(
 
         // recreate connection so user can join again
         createPeerConnection()
+
+    }
+
+    fun setSpeakerMode(enabled: Boolean){
+
+        audioManager.mode = AudioManager.MODE_IN_COMMUNICATION
+
+        audioManager.isSpeakerphoneOn = enabled
+
+        if(enabled){
+            println("Audio routed to SPEAKER")
+        }else{
+            println("Audio routed to EARPIECE")
+        }
 
     }
 }

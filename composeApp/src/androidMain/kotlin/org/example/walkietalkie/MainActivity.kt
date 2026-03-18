@@ -77,6 +77,7 @@ class MainActivity : ComponentActivity() {
                     }
                 },
 
+
                 onStop = {
                     webRTCManager.stopAudio()
                 },
@@ -89,6 +90,12 @@ class MainActivity : ComponentActivity() {
 
                     // Remove saved room
                     prefs.edit().remove("room_id").apply()
+                },
+
+                onToggleSpeaker = { enabled ->
+
+                    webRTCManager.setSpeakerMode(enabled)
+
                 }
             )
         }

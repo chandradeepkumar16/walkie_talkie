@@ -12,16 +12,14 @@ import org.example.walkietalkie.ui.WalkieTalkieScreen
 
 @Composable
 fun App(
-
     savedRoom: String,
     onSaveRoom: (String) -> Unit,
-
     onSignalReceived: (Signal) -> Unit,
     onTalk: (String) -> Unit,
     onStop: () -> Unit,
-    onExit: () -> Unit
-
-) {
+    onExit: () -> Unit,
+    onToggleSpeaker: (Boolean) -> Unit
+){
 
     val signalingService = SignalingService()
 
@@ -67,7 +65,8 @@ fun App(
                 onExit()
                 isInRoom = false
 
-            }
+            },
+            onToggleSpeaker=onToggleSpeaker
         )
     }
 
