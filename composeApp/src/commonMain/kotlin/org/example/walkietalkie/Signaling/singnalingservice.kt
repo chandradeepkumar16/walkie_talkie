@@ -9,6 +9,7 @@ import kotlinx.coroutines.delay
 import org.example.walkietalkie.model.Signal
 import org.example.walkietalkie.model.SignalType
 import org.example.walkietalkie.network.SupabaseClient
+import kotlin.time.Clock
 
 class SignalingService {
 
@@ -61,16 +62,25 @@ class SignalingService {
     }
 
 
-    suspend fun sendPing(room: String) {
+    suspend fun sendPing(
+        room:String,
+        sender:String
+    ){
 
         val signal = Signal(
-            sender = "android_user",
+
+            sender = sender,
+
             room = room,
-            type = "PING",
-            data = "User wants to talk"
+
+            type = SignalType.PING,
+
+            data = "ping"
+
         )
 
         sendSignal(signal)
+
     }
 
 

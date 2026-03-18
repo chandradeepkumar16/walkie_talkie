@@ -1,6 +1,7 @@
 package org.example.walkietalkie
 
 import androidx.compose.runtime.*
+import com.russhwolf.settings.Settings
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -12,6 +13,7 @@ import org.example.walkietalkie.ui.WalkieTalkieScreen
 
 @Composable
 fun App(
+    deviceId: String,
     savedRoom: String,
     onSaveRoom: (String) -> Unit,
     onSignalReceived: (Signal) -> Unit,
@@ -22,6 +24,23 @@ fun App(
 ){
 
     val signalingService = SignalingService()
+
+//    val context = LocalContext.current
+//
+//    fun playPingSound(){
+//
+//        val mp = MediaPlayer.create(
+//            context,
+//            Settings.System.DEFAULT_NOTIFICATION_URI
+//        )
+//
+//        mp.setOnCompletionListener {
+//            it.release()
+//        }
+//
+//        mp.start()
+//
+//    }
 
     var currentRoom by remember {
         mutableStateOf(savedRoom)
@@ -53,7 +72,7 @@ fun App(
 
             onPing = { room ->
                 CoroutineScope(Dispatchers.Default).launch {
-                    signalingService.sendPing(room)
+                    signalingService.sendPing(room,deviceId)
                 }
             },
 
@@ -75,11 +94,16 @@ fun App(
         signalingService.listenForSignals { signal ->
 
             if (signal.room != currentRoom) return@listenForSignals
+            if(!isInRoom) return@listenForSignals
+            if(signal.sender == deviceId) return@listenForSignals
+
+
 
             when (signal.type) {
 
                 SignalType.PING -> {
                     println("User wants to talk")
+                    onSignalReceived(signal)
                 }
 
                 SignalType.OFFER -> {
