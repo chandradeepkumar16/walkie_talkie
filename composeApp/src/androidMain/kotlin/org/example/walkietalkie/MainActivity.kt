@@ -90,7 +90,7 @@ class MainActivity : ComponentActivity() {
 
                     println("User exited")
 
-                    finish()
+//                    finish()
 
                 }
 

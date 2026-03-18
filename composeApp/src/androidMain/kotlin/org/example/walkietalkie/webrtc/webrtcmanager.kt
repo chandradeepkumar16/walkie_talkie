@@ -250,5 +250,8 @@ class WebRTCManager(
         peerConnection?.close()
         peerConnection = null
 
+        // recreate connection so user can join again
+        createPeerConnection()
+
     }
 }
