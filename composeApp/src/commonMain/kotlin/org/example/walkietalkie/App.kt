@@ -1,5 +1,6 @@
 package org.example.walkietalkie
 
+import androidx.compose.runtime.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import kotlinx.coroutines.CoroutineScope
@@ -12,8 +13,6 @@ import org.example.walkietalkie.ui.WalkieTalkieScreen
 
 @Composable
 fun App(
-//    onSignalReceived: (Signal) -> Unit,
-//    onTalk: (String) -> Unit
     onSignalReceived: (Signal) -> Unit,
     onTalk: (String) -> Unit,
     onStop: () -> Unit,
@@ -22,11 +21,14 @@ fun App(
 
     val signalingService = SignalingService()
 
-    var currentRoom = "room_1015"
+    // CURRENT ROOM STATE (dynamic now)
+    var currentRoom by remember { mutableStateOf("room_1015") }
 
     WalkieTalkieScreen(
 
         onPing = { room ->
+
+            currentRoom = room
 
             CoroutineScope(Dispatchers.Default).launch {
                 signalingService.sendPing(room)
@@ -35,12 +37,20 @@ fun App(
         },
 
         onTalk = { room ->
+
+            currentRoom = room
+
             onTalk(room)
+
         },
 
-        onStop = { println("Stop talking") },
+        onStop = {
+            onStop()
+        },
 
-        onExit = { println("Exit room") }
+        onExit = {
+            onExit()
+        }
 
     )
 
@@ -48,6 +58,7 @@ fun App(
 
         signalingService.listenForSignals { signal ->
 
+            // ONLY ACCEPT SIGNALS FOR CURRENT ROOM
             if(signal.room != currentRoom){
                 return@listenForSignals
             }

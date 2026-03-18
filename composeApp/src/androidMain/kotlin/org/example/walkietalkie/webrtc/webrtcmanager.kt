@@ -129,18 +129,23 @@ class WebRTCManager(
 
     fun startAudio() {
 
-        val audioSource =
-            peerConnectionFactory.createAudioSource(MediaConstraints())
+        if(audioTrack == null){
 
-        audioTrack =
-            peerConnectionFactory.createAudioTrack(
-                "audio_track",
-                audioSource
-            )
+            val audioSource =
+                peerConnectionFactory.createAudioSource(MediaConstraints())
 
-        peerConnection?.addTrack(audioTrack)
+            audioTrack =
+                peerConnectionFactory.createAudioTrack(
+                    "audio_track",
+                    audioSource
+                )
+
+            peerConnection?.addTrack(audioTrack)
+
+        }
+
+        audioTrack?.setEnabled(true)
     }
-
     fun stopAudio() {
         audioTrack?.setEnabled(false)
     }
