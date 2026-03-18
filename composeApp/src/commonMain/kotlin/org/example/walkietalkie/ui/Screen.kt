@@ -9,6 +9,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
@@ -26,159 +27,211 @@ fun WalkieTalkieScreen(
 ) {
 
     var speakerOn by remember { mutableStateOf(false) }
+    var talking by remember { mutableStateOf(false) }
 
-    val green = Color(0xFF00C853)
+    val green = Color(0xFF00E676)
+    val deviceColor = Color(0xFF1B1F27)
+    val background = Color(0xFF0D0F14)
+
     Box(
 
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF0F1115)),
+            .background(background),
 
         contentAlignment = Alignment.Center
 
-    ) {
+    ){
 
-        Column(
+        Card(
 
             modifier = Modifier
                 .fillMaxWidth(0.85f)
-                .padding(vertical = 30.dp),
+                .padding(20.dp),
 
-            horizontalAlignment = Alignment.CenterHorizontally
+            shape = RoundedCornerShape(24.dp),
 
-        ) {
-
-            Text(
-                text = "CONNECTED",
-                color = green,
-                fontSize = 14.sp
+            colors = CardDefaults.cardColors(
+                containerColor = deviceColor
             )
 
-            Spacer(modifier = Modifier.height(15.dp))
+        ){
 
-            Card(
+            Column(
 
-                shape = RoundedCornerShape(12.dp),
+                modifier = Modifier.padding(25.dp),
 
-                colors = CardDefaults.cardColors(
-                    containerColor = Color(0xFF1B1F27)
-                )
+                horizontalAlignment = Alignment.CenterHorizontally
 
             ){
 
                 Text(
-
-                    text = room.replace("room_",""),
-
+                    "CONNECTED",
                     color = green,
-
-                    fontSize = 38.sp,
-
-                    modifier = Modifier.padding(
-                        horizontal = 50.dp,
-                        vertical = 18.dp
-                    )
-
+                    fontSize = 13.sp
                 )
 
-            }
+                Spacer(modifier = Modifier.height(10.dp))
 
-            Spacer(modifier = Modifier.height(30.dp))
+                Card(
 
-            Row {
+                    shape = RoundedCornerShape(12.dp),
+
+                    colors = CardDefaults.cardColors(
+                        containerColor = Color(0xFF111418)
+                    )
+
+                ){
+
+                    Text(
+
+                        text = room.replace("room_",""),
+
+                        color = green,
+
+                        fontSize = 42.sp,
+
+                        fontWeight = FontWeight.Bold,
+
+                        modifier = Modifier.padding(
+                            horizontal = 45.dp,
+                            vertical = 18.dp
+                        )
+
+                    )
+
+                }
+
+                Spacer(modifier = Modifier.height(25.dp))
+
+                Row(
+
+                    horizontalArrangement = Arrangement.Center
+
+                ){
+
+                    Button(
+
+                        onClick = {
+
+                            speakerOn = !speakerOn
+
+                            onToggleSpeaker(speakerOn)
+
+                        },
+
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor =
+                                if(speakerOn) green else Color.DarkGray
+                        )
+
+                    ){
+
+                        if(speakerOn){
+                            Text("Speaker")
+                        }else{
+                            Text("Earpiece")
+                        }
+
+                    }
+
+                    Spacer(modifier = Modifier.width(10.dp))
+
+                    Button(
+
+                        onClick = { onPing(room) },
+
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color.DarkGray
+                        )
+
+                    ){
+
+                        Text("Ping")
+
+                    }
+
+                }
+
+                Spacer(modifier = Modifier.height(35.dp))
 
                 Button(
 
                     onClick = {
 
-                        speakerOn = !speakerOn
+                        talking = true
 
-                        onToggleSpeaker(speakerOn)
+                        onTalk(room)
 
-                    }
+                    },
+
+                    shape = CircleShape,
+
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor =
+                            if(talking) Color.Red else green
+                    ),
+
+                    modifier = Modifier.size(160.dp)
 
                 ){
 
-                    if(speakerOn){
-                        Text("Speaker")
-                    }else{
-                        Text("Earpiece")
-                    }
+                    Text(
+
+                        if(talking) "LIVE" else "TALK",
+
+                        fontSize = 22.sp,
+
+                        fontWeight = FontWeight.Bold
+
+                    )
 
                 }
 
-                Spacer(modifier = Modifier.width(12.dp))
+                Spacer(modifier = Modifier.height(20.dp))
 
                 Button(
 
-                    onClick = { onPing(room) }
+                    onClick = {
+
+                        talking = false
+
+                        onStop()
+
+                    },
+
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color.Gray
+                    )
 
                 ){
 
-                    Text("Ping")
+                    Text("Stop")
 
                 }
 
-            }
+                Spacer(modifier = Modifier.height(30.dp))
 
-            Spacer(modifier = Modifier.height(35.dp))
+                Button(
 
-            Button(
+                    onClick = onExit,
 
-                onClick = { onTalk(room) },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFFB00020)
+                    ),
 
-                shape = CircleShape,
+                    modifier = Modifier.fillMaxWidth()
 
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = green
-                ),
+                ){
 
-                modifier = Modifier.size(150.dp)
+                    Text("Exit Room")
 
-            ){
-
-                Text(
-                    "TALK",
-                    fontSize = 20.sp
-                )
-
-            }
-
-            Spacer(modifier = Modifier.height(20.dp))
-
-            Button(
-
-                onClick = onStop,
-
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color.DarkGray
-                )
-
-            ){
-
-                Text("Stop")
-
-            }
-
-            Spacer(modifier = Modifier.height(35.dp))
-
-            Button(
-
-                onClick = onExit,
-
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFFB00020)
-                ),
-
-                modifier = Modifier.fillMaxWidth()
-
-            ){
-
-                Text("Exit Room")
+                }
 
             }
 
         }
 
     }
+
 }
