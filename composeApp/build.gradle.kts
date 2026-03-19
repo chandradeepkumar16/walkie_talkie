@@ -50,6 +50,8 @@ kotlin {
             implementation("io.github.webrtc-sdk:android:137.7151.05")
             implementation("androidx.core:core-ktx:1.12.0")
 //            implementation("org.webrtc:google-webrtc")
+            implementation("androidx.core:core-ktx:1.12.0")
+            implementation("androidx.appcompat:appcompat:1.6.1")
 
         }
         commonMain.dependencies {

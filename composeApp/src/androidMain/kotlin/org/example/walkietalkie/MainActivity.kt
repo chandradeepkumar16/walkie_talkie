@@ -11,8 +11,12 @@ import org.example.walkietalkie.webrtc.WebRTCManager
 import android.Manifest
 import androidx.core.app.ActivityCompat
 import android.content.Context
+import android.content.Intent
 import android.media.MediaPlayer
+import android.os.Build
 import android.provider.Settings
+import androidx.annotation.RequiresApi
+import org.example.walkietalkie.signaling.SignalListenerService
 import kotlin.time.Clock
 
 
@@ -23,12 +27,38 @@ class MainActivity : ComponentActivity() {
     private val userId = java.util.UUID.randomUUID().toString()
 
 
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         ActivityCompat.requestPermissions(
             this,
             arrayOf(Manifest.permission.RECORD_AUDIO),
             1
         )
+
+
+        val powerManager =
+            getSystemService(Context.POWER_SERVICE)
+                    as android.os.PowerManager
+
+        if(!powerManager.isIgnoringBatteryOptimizations(packageName)){
+
+            val intent = Intent(
+
+                android.provider.Settings
+                    .ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS
+
+            )
+
+            intent.data =
+                android.net.Uri.parse(
+                    "package:$packageName"
+                )
+
+            startActivity(intent)
+
+        }
+
+
         val prefs = getSharedPreferences("walkie_prefs", Context.MODE_PRIVATE)
         val deviceId = prefs.getString("device_id", null)
             ?: Clock.System.now().nanosecondsOfSecond.toString().also {
@@ -56,6 +86,16 @@ class MainActivity : ComponentActivity() {
 
                 onSaveRoom = { room ->
                     prefs.edit().putString("room_id", room).apply()
+                    val intent = Intent(
+                        this,
+                        SignalListenerService::class.java
+                    )
+
+                    intent.putExtra("room",room)
+
+                    intent.putExtra("deviceId",deviceId)
+                    intent.setPackage(packageName)
+                    startForegroundService(intent)
                 },
 
 
@@ -122,6 +162,13 @@ class MainActivity : ComponentActivity() {
 
                     // Remove saved room
                     prefs.edit().remove("room_id").apply()
+
+                    stopService(
+                        Intent(
+                            this,
+                            SignalListenerService::class.java
+                        )
+                    )
                 },
 
                 onToggleSpeaker = { enabled ->
