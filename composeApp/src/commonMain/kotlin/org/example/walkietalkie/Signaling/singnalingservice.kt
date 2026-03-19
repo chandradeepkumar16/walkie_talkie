@@ -19,17 +19,6 @@ class SignalingService {
             .insert(signal)
     }
 
-    suspend fun testInsertSignal() {
-        val signal = Signal(
-            sender = "android_user",
-            room = "room101",
-            type = "PING",
-            data = "hello from android"
-        )
-
-        sendSignal(signal)
-        println("Signal sent to Supabase")
-    }
 
     suspend fun listenForSignals(onSignalReceived: (Signal) -> Unit) {
         while (true) {

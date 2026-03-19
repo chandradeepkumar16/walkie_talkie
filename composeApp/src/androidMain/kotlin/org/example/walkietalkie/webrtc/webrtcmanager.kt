@@ -26,6 +26,13 @@ class WebRTCManager(
 
     private fun initializeWebRTC() {
 
+        PeerConnectionFactory.initialize(
+            PeerConnectionFactory.InitializationOptions
+                .builder(context)
+                .setEnableInternalTracer(true)
+                .createInitializationOptions()
+        )
+
         val options = PeerConnectionFactory.InitializationOptions
             .builder(context)
             .createInitializationOptions()
@@ -137,8 +144,31 @@ class WebRTCManager(
 
         if(audioTrack == null){
 
+            println("Creating NEW audio track")
+
+            val constraints = MediaConstraints().apply {
+                mandatory.add(
+                    MediaConstraints.KeyValuePair(
+                        "googEchoCancellation",
+                        "true"
+                    )
+                )
+                mandatory.add(
+                    MediaConstraints.KeyValuePair(
+                        "googNoiseSuppression",
+                        "true"
+                    )
+                )
+                mandatory.add(
+                    MediaConstraints.KeyValuePair(
+                        "googAutoGainControl",
+                        "true"
+                    )
+                )
+            }
+
             val audioSource =
-                peerConnectionFactory.createAudioSource(MediaConstraints())
+                peerConnectionFactory.createAudioSource(constraints)
 
             audioTrack =
                 peerConnectionFactory.createAudioTrack(
@@ -147,7 +177,6 @@ class WebRTCManager(
                 )
 
             peerConnection?.addTrack(audioTrack)
-
         }
 
         audioTrack?.setEnabled(true)
@@ -253,12 +282,17 @@ class WebRTCManager(
 
     fun closeConnection() {
 
+        println("Closing WebRTC connection")
+
+        audioTrack?.setEnabled(false)
+        audioTrack?.dispose()
+        audioTrack = null
+
         peerConnection?.close()
         peerConnection = null
 
-        // recreate connection so user can join again
+        // create fresh peer connection for next room
         createPeerConnection()
-
     }
 
     fun setSpeakerMode(enabled: Boolean){
@@ -274,4 +308,6 @@ class WebRTCManager(
         }
 
     }
+
+
 }
